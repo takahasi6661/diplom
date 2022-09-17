@@ -37,6 +37,7 @@ dependencies:
   #Здесь версия младше чем в лекции!
   mobx: ^2.0.6
   flutter_mobx: ^2.0.6+1
+  validators2: ^3.0.0
 
 dev_dependencies:
   flutter_test:

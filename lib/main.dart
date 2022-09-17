@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'form_store.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,10 +48,24 @@ class AuthenticationPage extends StatefulWidget {
 }
 
 class _AuthenticationPageState extends State<AuthenticationPage> {
+//old code, delete later
+//   AuthFormDate _formState=AuthFormDate(login: '', password: '');
+//   _submit(){
+//     print(_formState.login);
+//   }
 
-  AuthFormDate _formState=AuthFormDate(login: '', password: '');
-  _submit(){
-    print(_formState.login);
+  final store = FormStore();
+
+  @override
+  void initState(){
+    super.initState();
+    store.setupValidator();
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+    store.dispose();
   }
 
   @override
@@ -80,20 +96,24 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                       'Логин:',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, ),
                     ), ]),
-                 TextField(
-                  // decoration: InputDecoration(
-                  //   label: Text('Login')
-                  // ),
+                 Observer(builder: (context)=>TextField(
+                   // decoration: InputDecoration(
+                   //   label: Text('Login')
+                   // ),
                    decoration: InputDecoration(
                      hintText: 'Enter your login',
-                     // errorText: '',
+                     errorText: store.error.username,
                    ),
-                  onChanged: (String value){
-                    setState(() {
-                      _formState = _formState.copyWith(login: value);
-                    });
-                  },
-                ),
+                   onChanged: (value) => store.name=value,
+                 ),),
+
+                  Observer(builder: ((context){
+                    return AnimatedOpacity(
+                      opacity: store.isUserCheckPending ? 1 : 0, duration: const Duration(microseconds: 300),
+                    child: const LinearProgressIndicator(),
+                    );
+                  })),
+
                   Padding (padding: const EdgeInsets.only(top: 10.0),
                            child: Row( mainAxisAlignment: MainAxisAlignment.start,
                                children: const [
@@ -103,24 +123,30 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                                  ),
                                ]),
                   ),
-                    TextField(
+
+                    Observer(builder: (context)=>TextField(
                       decoration: InputDecoration(
                         hintText: 'Enter your password',
-                        // errorText: '',
+                        errorText: store.error.password,
                       ),
-                      onChanged: (String value){
-                        // setState(() {
-                        //   _formState = _formState.copyWith(password: value);
-                        // });
-                      },
-                    ),
+                      onChanged: (value) => store.password=value,
+                    ),),
+
+                    Observer(builder: ((context){
+                      return AnimatedOpacity(
+                        opacity: store.isPasswordCheckPending ? 1 : 0, duration: const Duration(microseconds: 300),
+                        child: const LinearProgressIndicator(),
+                      );
+                    })),
+
+
                   Row( mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Padding (padding: const EdgeInsets.only(top: 10.0),
+                        Padding (padding: const EdgeInsets.only(top: 5.0),
                           child:
                         ElevatedButton(
-                        onPressed: () {},
-                            child: Container(height:20.0, width:50.0,  child: Text(
+                            onPressed: store.validateAll,
+                            child: Container(height:20.0, width:50.0,  child: const Text(
                         'Войти',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, ),
                       ),
